@@ -239,3 +239,21 @@ variable "iam_permissions_boundary" {
   type        = string
   default     = null
 }
+
+variable "metadata_http_endpoint" {
+  description = "Whether the metadata service is available."
+  type        = string
+  default     = "enabled"
+}
+
+variable "metadata_http_tokens" {
+  description = "Whether or not the metadata service requires session tokens aka IMDSv2."
+  type        = string
+  default     = "optional"
+}
+
+variable "metadata_http_put_response_hop_limit" {
+  description = "The desired HTTP PUT response hop limit for instance metadata requests."
+  type        = number
+  default     = 1
+}
