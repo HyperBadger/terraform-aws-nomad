@@ -90,6 +90,8 @@ resource "aws_launch_configuration" "launch_configuration" {
   root_block_device {
     volume_type           = var.root_volume_type
     volume_size           = var.root_volume_size
+    iops                  = var.root_volume_iops
+    throughput            = var.root_volume_throughput
     delete_on_termination = var.root_volume_delete_on_termination
   }
 
@@ -101,6 +103,7 @@ resource "aws_launch_configuration" "launch_configuration" {
       volume_size           = ebs_block_device.value["volume_size"]
       snapshot_id           = lookup(ebs_block_device.value, "snapshot_id", null)
       iops                  = lookup(ebs_block_device.value, "iops", null)
+      throughput            = lookup(ebs_block_device.value, "throughput", null)
       encrypted             = lookup(ebs_block_device.value, "encrypted", null)
       delete_on_termination = lookup(ebs_block_device.value, "delete_on_termination", null)
     }
