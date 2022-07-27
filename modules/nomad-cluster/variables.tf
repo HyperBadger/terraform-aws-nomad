@@ -131,6 +131,18 @@ variable "root_volume_size" {
   default     = 50
 }
 
+variable "root_volume_iops" {
+  description = "IOPS to provision, only set when volume type is set to gp3 or io2."
+  type        = number
+  default     = null
+}
+
+variable "root_volume_throughput" {
+  description = "Throughput to provision, only set when type is set to gp3."
+  type        = number
+  default     = null
+}
+
 variable "root_volume_delete_on_termination" {
   description = "Whether the volume should be destroyed on instance termination."
   default     = true
