@@ -75,7 +75,7 @@ function install_aws_cli {
   cpu_arch="$(uname -m)"
   local readonly url="https://awscli.amazonaws.com/awscli-exe-linux-${cpu_arch}.zip"
   local readonly download_path="/tmp/awscliv2.zip"
-
+  curl -o "$download_path" "$url"
   unzip -d /tmp "$download_path"
   sudo /tmp/aws/install
 }
