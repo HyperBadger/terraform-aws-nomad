@@ -79,6 +79,7 @@ function install_aws_cli {
   unzip -d /tmp "$download_path"
   sudo /tmp/aws/install
   rm -rf /tmp/aws
+  rm -f "$download_path"
 }
 
 function has_dnf {
