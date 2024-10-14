@@ -78,6 +78,7 @@ function install_aws_cli {
   curl -o "$download_path" "$url"
   unzip -d /tmp "$download_path"
   sudo /tmp/aws/install
+  rm -rf /tmp/aws
 }
 
 function has_dnf {
