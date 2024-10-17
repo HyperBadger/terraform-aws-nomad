@@ -167,6 +167,12 @@ variable "health_check_grace_period" {
   default     = 300
 }
 
+variable "instance_role_path" {
+  description = "Path in which to create the IAM role which is attached to the instance."
+  type        = string
+  default     = "/"
+}
+
 variable "instance_profile_path" {
   description = "Path in which to create the IAM instance profile."
   type        = string
