@@ -13,7 +13,10 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_autoscaling_group" "autoscaling_group" {
-  launch_configuration = aws_launch_configuration.launch_configuration.name
+  launch_template {
+    id      = aws_launch_template.launch_template.id
+    version = "$Latest"
+  }
 
   name                = var.asg_name
   availability_zones  = var.availability_zones
@@ -66,46 +69,62 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE LAUNCH CONFIGURATION TO DEFINE WHAT RUNS ON EACH INSTANCE IN THE ASG
+# CREATE LAUNCH TEMPLATE TO DEFINE WHAT RUNS ON EACH INSTANCE IN THE ASG
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_launch_configuration" "launch_configuration" {
+resource "aws_launch_template" "launch_template" {
   name_prefix   = "${var.cluster_name}-"
   image_id      = var.ami_id
   instance_type = var.instance_type
-  user_data     = var.user_data
+  user_data     = base64encode(var.user_data)
 
-  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
-  key_name             = var.ssh_key_name
+  iam_instance_profile {
+    name = aws_iam_instance_profile.instance_profile.name
+  }
 
-  security_groups = concat(
+  key_name = var.ssh_key_name
+
+  vpc_security_group_ids = concat(
     [aws_security_group.lc_security_group.id],
     var.security_groups,
   )
-  placement_tenancy           = var.tenancy
-  associate_public_ip_address = var.associate_public_ip_address
+
+  placement {
+    tenancy = var.tenancy
+  }
+
+  network_interfaces {
+    associate_public_ip_address = var.associate_public_ip_address
+  }
 
   ebs_optimized = var.root_volume_ebs_optimized
 
-  root_block_device {
-    volume_type           = var.root_volume_type
-    volume_size           = var.root_volume_size
-    iops                  = var.root_volume_iops
-    throughput            = var.root_volume_throughput
-    delete_on_termination = var.root_volume_delete_on_termination
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_type           = var.root_volume_type
+      volume_size           = var.root_volume_size
+      iops                  = var.root_volume_iops
+      throughput            = var.root_volume_throughput
+      delete_on_termination = var.root_volume_delete_on_termination
+    }
   }
 
-  dynamic "ebs_block_device" {
+  dynamic "block_device_mappings" {
     for_each = var.ebs_block_devices
 
     content {
-      device_name           = ebs_block_device.value["device_name"]
-      volume_size           = ebs_block_device.value["volume_size"]
-      snapshot_id           = lookup(ebs_block_device.value, "snapshot_id", null)
-      iops                  = lookup(ebs_block_device.value, "iops", null)
-      throughput            = lookup(ebs_block_device.value, "throughput", null)
-      encrypted             = lookup(ebs_block_device.value, "encrypted", null)
-      delete_on_termination = lookup(ebs_block_device.value, "delete_on_termination", null)
+      device_name = block_device_mappings.value["device_name"]
+
+      ebs {
+        volume_size           = block_device_mappings.value["volume_size"]
+        snapshot_id           = lookup(block_device_mappings.value, "snapshot_id", null)
+        iops                  = lookup(block_device_mappings.value, "iops", null)
+        throughput            = lookup(block_device_mappings.value, "throughput", null)
+        encrypted             = lookup(block_device_mappings.value, "encrypted", null)
+        delete_on_termination = lookup(block_device_mappings.value, "delete_on_termination", null)
+      }
     }
   }
 
@@ -113,17 +132,6 @@ resource "aws_launch_configuration" "launch_configuration" {
     http_endpoint               = var.metadata_http_endpoint
     http_tokens                 = var.metadata_http_tokens
     http_put_response_hop_limit = var.metadata_http_put_response_hop_limit
-  }
-
-  # Important note: whenever using a launch configuration with an auto scaling group, you must set
-  # create_before_destroy = true. However, as soon as you set create_before_destroy = true in one resource, you must
-  # also set it in every resource that it depends on, or you'll get an error about cyclic dependencies (especially when
-  # removing resources). For more info, see:
-  #
-  # https://www.terraform.io/docs/providers/aws/r/launch_configuration.html
-  # https://terraform.io/docs/configuration/resources.html
-  lifecycle {
-    create_before_destroy = true
   }
 }
 
@@ -133,15 +141,8 @@ resource "aws_launch_configuration" "launch_configuration" {
 
 resource "aws_security_group" "lc_security_group" {
   name_prefix = var.cluster_name
-  description = "Security group for the ${var.cluster_name} launch configuration"
+  description = "Security group for the ${var.cluster_name} launch template"
   vpc_id      = var.vpc_id
-
-  # aws_launch_configuration.launch_configuration in this module sets create_before_destroy to true, which means
-  # everything it depends on, including this resource, must set it as well, or you'll get cyclic dependency errors
-  # when you try to do a terraform destroy.
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "aws_security_group_rule" "allow_ssh_inbound" {
@@ -190,13 +191,6 @@ resource "aws_iam_instance_profile" "instance_profile" {
   name_prefix = var.cluster_name
   path        = var.instance_profile_path
   role        = aws_iam_role.instance_role.name
-
-  # aws_launch_configuration.launch_configuration in this module sets create_before_destroy to true, which means
-  # everything it depends on, including this resource, must set it as well, or you'll get cyclic dependency errors
-  # when you try to do a terraform destroy.
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "aws_iam_role" "instance_role" {
@@ -205,13 +199,6 @@ resource "aws_iam_role" "instance_role" {
   assume_role_policy = data.aws_iam_policy_document.instance_role.json
 
   permissions_boundary = var.iam_permissions_boundary
-
-  # aws_iam_instance_profile.instance_profile in this module sets create_before_destroy to true, which means
-  # everything it depends on, including this resource, must set it as well, or you'll get cyclic dependency errors
-  # when you try to do a terraform destroy.
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 data "aws_iam_policy_document" "instance_role" {
