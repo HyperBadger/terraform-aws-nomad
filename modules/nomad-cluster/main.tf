@@ -201,6 +201,7 @@ resource "aws_iam_instance_profile" "instance_profile" {
 
 resource "aws_iam_role" "instance_role" {
   name_prefix        = var.cluster_name
+  path               = var.instance_role_path
   assume_role_policy = data.aws_iam_policy_document.instance_role.json
 
   permissions_boundary = var.iam_permissions_boundary
