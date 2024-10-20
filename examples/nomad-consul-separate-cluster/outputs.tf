@@ -6,8 +6,8 @@ output "asg_name_nomad_servers" {
   value = module.nomad_servers.asg_name
 }
 
-output "launch_config_name_nomad_servers" {
-  value = module.nomad_servers.launch_config_name
+output "launch_template_name_nomad_servers" {
+  value = module.nomad_servers.launch_template_name
 }
 
 output "iam_role_arn_nomad_servers" {
