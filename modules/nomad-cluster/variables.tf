@@ -119,6 +119,12 @@ variable "root_volume_ebs_optimized" {
   default     = false
 }
 
+variable "root_volume_device_name" {
+  description = "The device name to use for the root EBS volume."
+  type        = string
+  default     = "/dev/xvda"
+}
+
 variable "root_volume_type" {
   description = "The type of volume. Must be one of: standard, gp2, or io1."
   type        = string

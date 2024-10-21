@@ -100,7 +100,7 @@ resource "aws_launch_template" "launch_template" {
   ebs_optimized = var.root_volume_ebs_optimized
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = var.root_volume_device_name
 
     ebs {
       volume_type           = var.root_volume_type
