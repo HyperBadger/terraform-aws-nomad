@@ -178,7 +178,7 @@ If you want to deploy a new version of Nomad across the cluster, the best way to
 1. Set the `ami_id` parameter to the ID of the new AMI.
 1. Run `terraform apply`.
 
-This updates the Launch Configuration of the ASG, so any new Instances in the ASG will have your new AMI, but it does
+This updates the Launch Template of the ASG, so any new Instances in the ASG will have your new AMI, but it does
 NOT actually deploy those new instances. To make that happen, you should do the following:
 
 1. Issue an API call to one of the old Instances in the ASG to have it leave gracefully. E.g.:

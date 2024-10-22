@@ -6,8 +6,8 @@ output "asg_name_servers" {
   value = module.servers.asg_name
 }
 
-output "launch_config_name_servers" {
-  value = module.servers.launch_config_name
+output "launch_template_name_servers" {
+  value = module.servers.launch_template_name
 }
 
 output "iam_role_arn_servers" {
@@ -30,8 +30,8 @@ output "asg_name_clients" {
   value = module.clients.asg_name
 }
 
-output "launch_config_name_clients" {
-  value = module.clients.launch_config_name
+output "launch_template_name_clients" {
+  value = module.clients.launch_template_name
 }
 
 output "iam_role_arn_clients" {

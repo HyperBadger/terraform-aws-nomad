@@ -119,6 +119,12 @@ variable "root_volume_ebs_optimized" {
   default     = false
 }
 
+variable "root_volume_device_name" {
+  description = "The device name to use for the root EBS volume."
+  type        = string
+  default     = "/dev/xvda"
+}
+
 variable "root_volume_type" {
   description = "The type of volume. Must be one of: standard, gp2, or io1."
   type        = string
@@ -221,7 +227,7 @@ variable "tags" {
 }
 
 variable "ebs_block_devices" {
-  description = "List of ebs volume definitions for those ebs_volumes that should be added to the instances created with the EC2 launch-configuration. Each element in the list is a map containing keys defined for ebs_block_device (see: https://www.terraform.io/docs/providers/aws/r/launch_configuration.html#ebs_block_device."
+  description = "List of ebs volume definitions for those ebs_volumes that should be added to the instances created with the EC2 launch template. Each element in the list is a map containing keys defined for block_device_mappings.ebs (see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#block-devices."
   # We can't narrow the type down more than "any" because if we use list(object(...)), then all the fields in the
   # object will be required (whereas some, such as encrypted, should be optional), and if we use list(map(...)), all
   # the values in the map must be of the same type, whereas we need some to be strings, some to be bools, and some to
